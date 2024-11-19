@@ -6,8 +6,8 @@ import { Message } from "types/message";
 
 const ChatBot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [contextBot1, setContextBot1] = useState("act as a customer that wants to buy something, you have $100");
-  const [contextBot2, setContextBot2] = useState("act as a seller that has two product, a smartwatch for $80 and a pen for $10");
+  const [contextBot1, setContextBot1] = useState("");
+  const [contextBot2, setContextBot2] = useState("");
   const [isConversationActive, setIsConversationActive] = useState(false);
 
   // Initialize conversation histories for each bot
