@@ -1,5 +1,5 @@
 import "./ChatBot.css";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { generateResponseBot1 } from "services/ollama/ollama-api-bot-one";
 import { generateResponseBot2 } from "services/ollama/ollama-api-bot-two";
 import { Message } from "types/message";
@@ -9,7 +9,15 @@ const ChatBot: React.FC = () => {
   const [contextBot1, setContextBot1] = useState("");
   const [contextBot2, setContextBot2] = useState("");
   const [isConversationActive, setIsConversationActive] = useState(false);
-
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // Scroll to the bottom whenever messages change
+    if (chatWindowRef.current) {
+      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+    }
+  }, [messages]);
+  
   // Initialize conversation histories for each bot
   const bot1Messages: Message[] = [{ role: "system", content: contextBot1 }];
   const bot2Messages: Message[] = [{ role: "system", content: contextBot2 }];
@@ -114,7 +122,7 @@ const ChatBot: React.FC = () => {
         <button onClick={resetConversation}>Reset Conversation</button>
         <button onClick={downloadConversation}>Download Conversation</button>
       </div>
-      <div className="chat-window">
+      <div className="chat-window" ref={chatWindowRef}>
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.role}`}>
             <strong>{message.role === "user" ? "Bot 1" : "Bot 2"}:</strong> {message.content}
