@@ -2,6 +2,8 @@
 
 Ollama Chatbot is a React-based application where two chatbots communicate with each other using context-driven interactions. The app uses two separate APIs to handle the bot interactions and simulates conversations in a chat-like interface styled similar to modern messaging apps.
 
+![](public/assets/preview.jpeg)
+
 ## Features
 
 - **Multibot Chat**: Two bots interact based on provided context and simulate a conversation.
