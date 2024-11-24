@@ -39,7 +39,7 @@ body {
     width: 100%;
     resize: vertical; /* Enable vertical resizing */
     padding: 12px;
-    font-size: 14px;
+    font-size: 12px;
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -80,7 +80,7 @@ body {
     border: 1px solid #ccc;
     border-radius: 10px;
     padding: 20px;
-    height: 400px;
+    height: 480px;
     overflow-y: auto;
     margin: 0 auto;
     width: 90%;
@@ -95,7 +95,7 @@ body {
     display: inline-block;
     padding: 10px 15px;
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 21px;
     line-height: 1.4;
     max-width: 70%;
     word-wrap: break-word;
@@ -150,3 +150,24 @@ body {
   .chat-window::-webkit-scrollbar-track {
     background-color: #f0f2f5;
   }
+
+  /* Define the zoom-in animation */
+@keyframes zoomIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Apply the animation to incoming messages */
+.message.zoom-in {
+  animation: zoomIn 1s ease-out;
+}

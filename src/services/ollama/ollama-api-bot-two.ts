@@ -9,7 +9,7 @@ export const generateResponseBot2 = async (
 ): Promise<string> => {
   try {
     const response = await axios.post(API_URL, {
-      model: "incept5/llama3.1-claude:latest", // Replace with Bot 2's model
+      model: "llama3.1:8b", // Replace with Bot 2's model
       messages,
       stream: false,
     });

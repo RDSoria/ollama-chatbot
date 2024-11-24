@@ -8,8 +8,10 @@ const ChatBot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [contextBot1, setContextBot1] = useState("");
   const [contextBot2, setContextBot2] = useState("");
-  const [isConversationActive, setIsConversationActive] = useState(false);
   const chatWindowRef = useRef<HTMLDivElement>(null);
+  const bot1TimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const bot2TimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isCancelledRef = useRef(false);
   
   useEffect(() => {
     // Scroll to the bottom whenever messages change
@@ -22,16 +24,41 @@ const ChatBot: React.FC = () => {
   const bot1Messages: Message[] = [{ role: "system", content: contextBot1 }];
   const bot2Messages: Message[] = [{ role: "system", content: contextBot2 }];
 
-
-  // Function to add messages to the UI but exclude "system" messages
   const addMessageToUI = (content: string, role: "user" | "assistant") => {
-    setMessages((prevMessages) => [...prevMessages, { role, content }]);
+    const newMessage = { role, content };
+
+    // Add the new message with a temporary "zoom-in" class
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { ...newMessage, animation: true }, // Add a temporary flag for animation
+    ]);
+
+    // Remove the animation class after 1 second
+    setTimeout(() => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg, index) =>
+          index === prevMessages.length - 1
+            ? { ...msg, animation: false }
+            : msg
+        )
+      );
+    }, 1000);
   };
 
   // Reset conversation
   const resetConversation = () => {
     setMessages([]);
-    setIsConversationActive(false);
+
+    // Clear any pending timeouts
+    if (bot1TimeoutRef.current) {
+      clearTimeout(bot1TimeoutRef.current);
+      bot1TimeoutRef.current = null;
+    }
+    if (bot2TimeoutRef.current) {
+      clearTimeout(bot2TimeoutRef.current);
+      bot2TimeoutRef.current = null;
+    }
+    isCancelledRef.current = true;
   };
 
   // Download conversation as a text file
@@ -49,13 +76,13 @@ const ChatBot: React.FC = () => {
   // Handle Bot 1's response
   const handleBot1Response = async () => {
     try {
-      if (!isConversationActive) return;
-
       // Add initial greeting message if it's the first interaction
-      bot1Messages.push({ role: "user", content: "Hi" });
-
+      if(bot1Messages.length === 1)
+        bot1Messages.push({ role: "user", content: "start" });
+      if (isCancelledRef.current) return;
       // Generate response for Bot 1
       const response = await generateResponseBot1(bot1Messages);
+      
       addMessageToUI(response, "user"); // Display Bot 1's response in UI
 
       // Save response in histories: as "assistant" in bot1Messages, as "user" in bot2Messages
@@ -63,7 +90,7 @@ const ChatBot: React.FC = () => {
       bot2Messages.push({ role: "user", content: response });
 
       // Wait 3 seconds, then handle Bot 2's response
-      setTimeout(() => handleBot2Response(), 3000);
+      bot2TimeoutRef.current = setTimeout(() => handleBot2Response(), 3000);
     } catch (error) {
       console.error("Error with Bot 1:", error);
     }
@@ -72,10 +99,10 @@ const ChatBot: React.FC = () => {
   // Handle Bot 2's response
   const handleBot2Response = async () => {
     try {
-      if (!isConversationActive) return;
-
+      if (isCancelledRef.current) return;
       // Generate response for Bot 2 based on Bot 1's latest response
       const response = await generateResponseBot2(bot2Messages);
+      
       addMessageToUI(response, "assistant"); // Display Bot 2's response in UI
 
       // Save response in histories: as "assistant" in bot2Messages, as "user" in bot1Messages
@@ -83,14 +110,14 @@ const ChatBot: React.FC = () => {
       bot1Messages.push({ role: "user", content: response });
 
       // Wait 3 seconds, then handle Bot 1's response again
-      setTimeout(() => handleBot1Response(), 3000);
+      bot1TimeoutRef.current = setTimeout(() => handleBot1Response(), 3000);
     } catch (error) {
       console.error("Error with Bot 2:", error);
     }
   };
 
   const startConversation = () => {
-    setIsConversationActive(true);
+    isCancelledRef.current = false;
     handleBot1Response();
   };
 
@@ -122,10 +149,18 @@ const ChatBot: React.FC = () => {
         <button onClick={resetConversation}>Reset Conversation</button>
         <button onClick={downloadConversation}>Download Conversation</button>
       </div>
-      <div className="chat-window" ref={chatWindowRef}>
+      <div className="chat-window"  ref={chatWindowRef}>
         {messages.map((message, index) => (
-          <div key={index} className={`message ${message.role}`}>
-            <strong>{message.role === "user" ? "Bot 1" : "Bot 2"}:</strong> {message.content}
+          <div
+            key={index}
+            className={`message ${message.role} ${
+              message.animation ? "zoom-in" : ""
+            }`}
+          >
+            <strong>
+              {message.role === "user" ? "Bot 1" : "Bot 2"}:
+            </strong>{" "}
+            {message.content}
           </div>
         ))}
       </div>
